@@ -14,7 +14,8 @@ class PhotoCopy:
         self.SetPicHeight()
         self.GetPicsInPath()
 
-    def SetPath(self, Path=os.path.dirname(os.path.realpath(__file__))):
+    def SetPath(self, Path=os.getcwd()):
+        # Default path is the current working directory on the command line
         self.path = Path
 
     def SetTitle(self, title="PhotoDoc", date='y'):
@@ -90,7 +91,7 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
 
     def GetPicsInPath(self):
         self.pics = []
-        ValidExtList = [".jpg",".jpeg",".png",".bmp",".gif"]
+        ValidExtList = [".jpg",".jpeg",".png",".bmp",".gif",".JPG",".JPEG",".PNG",".BMP",".GIF"]
         for file in os.listdir(self.path):
             for ValidExt in ValidExtList:
                 if file.endswith(ValidExt):
@@ -133,7 +134,6 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
                 return False
             else:
                 return True        
-            # TODO img_width, img_height = get_image_size(filename)
 
 
 #TODO Check if numbered
