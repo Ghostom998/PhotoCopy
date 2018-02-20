@@ -72,7 +72,7 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
         document = Document()
         p = document.add_paragraph()
         Path = self.path
-        PicList = self.pics
+        PicList = self.pics.sort() # Sort pics into an order
 
         for Pic in PicList:
             FullImageandPath = os.path.join(Path,Pic)
