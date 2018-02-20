@@ -136,5 +136,3 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
                 return True        
 
 
-#TODO Check if numbered
-
