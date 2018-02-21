@@ -72,10 +72,7 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
         document = Document()
         p = document.add_paragraph()
         Path = self.path
-        if isNumbered(self.pics):
-            PicList = sorted(self.pics)
-        else:
-            PicList
+        PicList = sorted(self.pics)
 
         for Pic in PicList:
             FullImageandPath = os.path.join(Path,Pic)
@@ -91,6 +88,28 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
             p.add_run("\n"+Pic.split('.')[0]+"\n")
 
         document.save(self.title + '.docx')
+
+    def WriteTable(self):
+        document = Document()
+        tbl = document.add_table(rows=0,cols=self.tablecolumns)
+        PicList = sorted(self.pics)
+        while PicList:
+            row_cells = tbl.add_row().cells
+            for idx, cell in enumerate(self.tablecolumns):
+                if idx%2 != 0:
+                    # if odd row, add picture
+                    p = row_cells[idx].paragraphs[0]
+                    FullImageandPath = os.path.join(self.path,PicList[0])
+                    isPortrait = self.IsPortrait(FullImageandPath)
+                    r = p.add_run()
+                    if isPortrait:
+                        r.add_picture(FullImageandPath,height=Inches(self.height))
+                    else:
+                        r.add_picture(FullImageandPath,width=Inches(self.width))
+                    PicList = PicList[1:]
+                else:
+                    # else if even row, i.e. second, etc. add description
+
 
     def GetPicsInPath(self):
         self.pics = []
