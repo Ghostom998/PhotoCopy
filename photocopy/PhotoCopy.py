@@ -79,6 +79,7 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
             r = p.add_run()
             # Check if portrait or landscape and call add_picture with the appropriate arguements
             # in order to set an appropriate pic size and preserve the aspect ratio
+            # TODO: getting errors when iterating this function!
             isPortrait = self.IsPortrait(FullImageandPath)
             if isPortrait:
                 r.add_picture(FullImageandPath,height=Inches(self.height))
