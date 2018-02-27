@@ -1,5 +1,6 @@
 # Pics2Word
 
+<<<<<<< HEAD
 A command line program to copy pictures into a word document.
 
 Usage can be found using "pics2word -h help"
@@ -16,3 +17,6 @@ TODO tasks:
     - Implement a logger to aid with debugging
     Bug Fix:
     - More error checking, throw meaningful exceptions to aid with debugging
+=======
+A command line program to copy pictures into a word document.
+>>>>>>> master
