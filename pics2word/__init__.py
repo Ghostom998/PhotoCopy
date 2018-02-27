@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os, sys
-from .PhotoCopy import *
+from .pics2word import *
 
 # Method to parse command line arguements into command-value pairs
 def getopts(argv):
@@ -12,7 +12,7 @@ def getopts(argv):
     return opts
 
 def main():
-    Doc = PhotoCopy()
+    Doc = pics2word()
     myargs = getopts(sys.argv)
     if '-h' in myargs:
         Doc.help()
@@ -21,21 +21,21 @@ def main():
         Doc.SetPath(myargs['-P'])
     if '-f' in myargs:
         # Set as table or default
-        Doc.Format(myargs['-f'])
+        Doc.SetFormat(format=myargs['-f'])
     if '-T' in myargs:
         # Set a title to override the default
         Doc.SetTitle(title=myargs['-T'],date=myargs['-Td'])
     if '-pw' in myargs:
         # Override the default picture width
-        Doc.SetPicWidth(myargs['-pw'])
+        Doc.SetPicWidth(float(myargs['-pw']))
     if '-ph' in myargs:
         # Override the default picture height
-        Doc.SetPicHeight(myargs['-ph']) 
+        Doc.SetPicHeight(float(myargs['-ph'])) 
     if '-tw' in myargs:
-        if myargs['-f'] is not "table":
+        if Doc.format[0] != 't' :
             raise ValueError("Must enable table format to format table width!")
         else:
-            Doc.SetTableWidth(myargs['-tw'])
+            Doc.SetTableWidth(int(myargs['-tw']))
     
     # after all optional parameters have been changed and not asked for help, then write document.
     if '-h' not in myargs:
