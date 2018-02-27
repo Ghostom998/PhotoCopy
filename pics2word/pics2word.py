@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-import os, sys
+import os, sys, logging
 from docx import Document
 from docx.shared import Inches
-import datetime, imghdr, struct
+import datetime, imghdr, struct, math
+from LogGen import set_up_logging
 
-class PhotoCopy:
+logger = logging.getLogger(__name__)
+
+class pics2word:
 
     def __init__(self):
         # set default values on instantiation, until changed with CL args
@@ -13,15 +16,18 @@ class PhotoCopy:
         self.SetPicWidth()
         self.SetPicHeight()
         self.GetPicsInPath()
+        self.SetFormat()
+        self.SetTableWidth()
 
     def SetPath(self, Path=os.getcwd()):
         # Default path is the current working directory on the command line
+        logger.info("Getting pictures from %s." % Path)
         self.path = Path
 
     def SetTitle(self, title="PhotoDoc", date='y'):
         # if date begions with 'y', append title with date
         if date[0] == 'y':
-            Today = self.GetDate()
+            Today = GetDate()
             self.title = title + "_" + str(Today)
         else:
             self.title = title
@@ -37,86 +43,106 @@ class PhotoCopy:
     def SetTableWidth(self, Columns=2):
         # TODO set a default!
         self.tablecolumns = Columns
-
-    def GetDate(self):
-        return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
-
-    def help(self):
-        message = '''Usage: python PhotoCopy.py [-command] [value]
-Options:
-\t-h\t- Pass "help" to print this help message to the terminal. \n\t\t  Pass the name of a command below without the '-' for more informatio about that command. <UNDER CONSTRUCTION>
-\t-P\t- Pass an alternative path to be used. i.e. \"C:\\\\Pictures\\\". Defaults to current directory.
-\t-f\t- format pictures. pass either "normal" or "table". Defaults to normal. <UNDER CONSTRUCTION>
-\t-T\t- Override the default title. Defaults to PhotoDoc_<current date> (See Td, below).
-\t-Td\t- Choose to append the title with the current date. Options: \"y\" or \"n\". Defaults to \"y\".
-\t-pw\t- Set the width of imported pictures in inches. Defaults to ........
-\t-ph\t- Set the hieght of imported pictures in inches. Defaults to ........
-\t-tw\t- Set the number of columns used in table format. Note: table format must be enabled! Defaults to 2.
-
-Commands may be passed as command-value pairs in any order.
-All commands are optional and the defaults will be used if no commands are given.
-
-Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f \"table\"\n'''
-        print(message)
     
-    def Format(self, format="normal"):
-        if format == "table":
+    def SetFormat(self, format="normal"):
+        logger.debug("Setting format to %s." % format)
+        if format[0].lower() == 't':
             self.format = "table"
-        if format == "normal":
+        elif format[0].lower() == 'n':
             self.format = "normal"
         else:
-            raise ValueError("Please enter a valid format for '-f' ")
+            raise ValueError("Please enter a valid format for '-f' i.e. \"Normal\" or \"Table\"")
 
-    # Import files as list
     def WriteDoc(self):
+        if self.format[0].lower() == 't':
+            logger.info("Writing to table.")
+            self.WriteTable()
+        else:
+            logger.info("Writing to document normally.")
+            self.WriteNormal()
+
+    def WriteNormal(self):
+        logger.info("Creating word document.")
         document = Document()
         p = document.add_paragraph()
         Path = self.path
-        PicList = sorted(self.pics)
-
+        # Todo check if numbered and sort appropriately
+        logger.debug("Sorting list of %s pictures." % len(self.pics))
+        PicList = sorted(self.pics) # Sort pics into an order
+        i=0
         for Pic in PicList:
+            logger.debug("Writing picture: %s." % pic)
             FullImageandPath = os.path.join(Path,Pic)
             r = p.add_run()
-            # Check if portrait or landscape and call add_picture with the appropriate arguements
-            # in order to set an appropriate pic size and preserve the aspect ratio
+            logger.debug("Checking if %s is portrait." % pic)
             isPortrait = self.IsPortrait(FullImageandPath)
+            logger.debug("Adding %s to file." % pic)
             if isPortrait:
                 r.add_picture(FullImageandPath,height=Inches(self.height))
             else:
                 r.add_picture(FullImageandPath,width=Inches(self.width))
-            # TODO "chop" pic name to remove extension
+            logger.debug("Adding description: %s." % Pic.split('.')[0])
             p.add_run("\n"+Pic.split('.')[0]+"\n")
-
+            # update progress
+            logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
+            cli_progress_test(cur_val=i,end_val=len(PicList))
+            i += 1
+        logger.info("Saving document as %s.docx" % self.title)
         document.save(self.title + '.docx')
 
     def WriteTable(self):
+        logger.info("Creating word document.")
         document = Document()
-        tbl = document.add_table(rows=0,cols=self.tablecolumns)
-        PicList = sorted(self.pics)
-        while PicList:
-            row_cells = tbl.add_row().cells
-            for idx, cell in enumerate(self.tablecolumns):
-                if idx%2 != 0:
-                    # if odd row, add picture
-                    p = row_cells[idx].paragraphs[0]
-                    FullImageandPath = os.path.join(self.path,PicList[0])
-                    isPortrait = self.IsPortrait(FullImageandPath)
-                    r = p.add_run()
-                    if isPortrait:
-                        r.add_picture(FullImageandPath,height=Inches(self.height))
-                    else:
-                        r.add_picture(FullImageandPath,width=Inches(self.width))
-                    PicList = PicList[1:]
-                else:
-                    # else if even row, i.e. second, etc. add description
-
-
+        Path = self.path
+        logger.debug("Sorting list of %s pictures." % len(self.pics))
+        PicList = sorted(self.pics) # Sort pics into an order
+        logger.info("Calculating number of rows.")
+        numRows = self.GetNumberofRows()
+        logger.info("Adding table of %s rows and %s columns." % (numRows, self.tablecolumns))
+        table = document.add_table(rows=numRows, cols=self.tablecolumns)
+        i=0
+        Row_Index = 0 # Resets every iteration
+        # list[start:stop:step] pastes the picture in every 2nd cell
+        for row in table.rows[::2]:
+            Col_Index = 0 # Resets every iteration
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    try:
+                        Pic = PicList[i]
+                        logger.debug("Writing %s in row %s cell %s paragraph %s." % (Pic, row, cell, paragraph))
+                        FullImageandPath = os.path.join(Path,Pic)
+                        r = paragraph.add_run()
+                        logging.debug("Checking if %s is portrait." % Pic)
+                        isPortrait = self.IsPortrait(FullImageandPath)
+                        logger.debug("Adding %s to file." % Pic)
+                        if isPortrait:
+                            r.add_picture(FullImageandPath,height=Inches(self.height))
+                        else:
+                            r.add_picture(FullImageandPath,width=Inches(self.width))
+                        # Offset 1 row down and add description
+                        logger.debug("Writing description %s in row %s, column %s" % (Pic.split('.')[0], row, cell))
+                        table.cell(row_idx=Row_Index + 1,col_idx=Col_Index).text = Pic.split('.')[0]
+                        # Update user of progress
+                        logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
+                        cli_progress_test(cur_val=i,end_val=len(PicList))
+                    except IndexError:
+                        # we incur an index error at the end of the picture list
+                        # hence, we will simply pass and do nothing with the remaining empty cells
+                        logging.error("Index Error on picture %s in row %s, cell %s." % (Pic, row, cell))
+                        pass
+                Col_Index += 1
+                i += 1
+            Row_Index += 2
+        logger.info("Saving document as %s.docx" % self.title)
+        document.save(self.title + '.docx')
+    
     def GetPicsInPath(self):
         self.pics = []
         ValidExtList = [".jpg",".jpeg",".png",".bmp",".gif",".JPG",".JPEG",".PNG",".BMP",".GIF"]
         for file in os.listdir(self.path):
             for ValidExt in ValidExtList:
                 if file.endswith(ValidExt):
+                    logging.debug("Adding %s to PicList" % file)
                     self.pics.append(file)
         return self.pics
 
@@ -174,50 +200,21 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
         else:
             return False
 
-'''
-#!/usr/bin/env python3
-import os, sys
-from .PhotoCopy import *
-'''
-# Method to parse command line arguements into command-value pairs
-def getopts(argv):
-    opts = {}  # Empty dictionary to store key-value pairs.
-    while argv:  # While there are arguments left to parse...
-        if argv[0][0] == '-':  # Found a "-name value" pair.
-            opts[argv[0]] = argv[1]  # Add key and value to the dictionary.
-        argv = argv[1:]  # Reduce the argument list by copying it starting from index 1.
-    return opts
+    def GetNumberofRows(self):
+        cols = self.tablecolumns
+        NumofPics = len(self.pics)
+        return int(math.ceil(NumofPics / cols)) * 2
 
-def main():
-    Doc = PhotoCopy()
-    myargs = getopts(sys.argv)
-    if '-h' in myargs:
-        Doc.help()
-    if '-P' in myargs:
-        # Override the default path
-        Doc.SetPath(myargs['-P'])
-    if '-f' in myargs:
-        # Set as table or default
-        Doc.Format(myargs['-f'])
-    if '-T' in myargs:
-        # Set a title to override the default
-        Doc.SetTitle(title=myargs['-T'],date=myargs['-Td'])
-    if '-pw' in myargs:
-        # Override the default picture width
-        Doc.SetPicWidth(myargs['-pw'])
-    if '-ph' in myargs:
-        # Override the default picture height
-        Doc.SetPicHeight(myargs['-ph']) 
-    if '-tw' in myargs:
-        if myargs['-f'] is not "table":
-            raise ValueError("Must enable table format to format table width!")
-        else:
-            Doc.SetTableWidth(myargs['-tw'])
+def GetDate():
+        logger.debug("Setting the date.")
+        return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
+
+def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
     
-    # after all optional parameters have been changed and not asked for help, then write document.
-    if '-h' not in myargs:
-        Doc.WriteDoc()
+    filled_len = int(round(bar_length * cur_val / float(end_val)))
 
-if __name__ == '__main__':
-    main()
+    percents = round(100.0 * cur_val / float(end_val), 1)
+    bar = '=' * filled_len + '-' * (bar_length - filled_len)
 
+    sys.stdout.write('[%s] %s%s ...%s\r\n' % (bar, percents, '%', suffix))
+    sys.stdout.flush()
