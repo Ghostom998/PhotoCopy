@@ -3,8 +3,10 @@ import os, sys
 from docx import Document
 from docx.shared import Inches
 import datetime, imghdr, struct
+import math
+from LogGen import set_up_logging
 
-class PhotoCopy:
+class pics2word:
 
     def __init__(self):
         # set default values on instantiation, until changed with CL args
@@ -13,6 +15,8 @@ class PhotoCopy:
         self.SetPicWidth()
         self.SetPicHeight()
         self.GetPicsInPath()
+        self.SetFormat()
+        self.SetTableWidth()
 
     def SetPath(self, Path=os.getcwd()):
         # Default path is the current working directory on the command line
@@ -40,56 +44,77 @@ class PhotoCopy:
 
     def GetDate(self):
         return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
-
-    def help(self):
-        message = '''Usage: python PhotoCopy.py [-command] [value]
-Options:
-\t-h\t- Pass "help" to print this help message to the terminal. \n\t\t  Pass the name of a command below without the '-' for more informatio about that command. <UNDER CONSTRUCTION>
-\t-P\t- Pass an alternative path to be used. i.e. \"C:\\\\Pictures\\\". Defaults to current directory.
-\t-f\t- format pictures. pass either "normal" or "table". Defaults to normal. <UNDER CONSTRUCTION>
-\t-T\t- Override the default title. Defaults to PhotoDoc_<current date> (See Td, below).
-\t-Td\t- Choose to append the title with the current date. Options: \"y\" or \"n\". Defaults to \"y\".
-\t-pw\t- Set the width of imported pictures in inches. Defaults to ........
-\t-ph\t- Set the hieght of imported pictures in inches. Defaults to ........
-\t-tw\t- Set the number of columns used in table format. Note: table format must be enabled! Defaults to 2.
-
-Commands may be passed as command-value pairs in any order.
-All commands are optional and the defaults will be used if no commands are given.
-
-Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f \"table\"\n'''
-        print(message)
     
-    def Format(self, format="normal"):
-        if format == "table":
+    def SetFormat(self, format="normal"):
+        if format[0].lower() == 't':
             self.format = "table"
-        if format == "normal":
+        elif format[0].lower() == 'n':
             self.format = "normal"
         else:
-            raise ValueError("Please enter a valid format for '-f' ")
+            raise ValueError("Please enter a valid format for '-f' i.e. \"Normal\" or \"Table\"")
 
-    # Import files as list
     def WriteDoc(self):
+        if self.format[0].lower() == 't':
+            self.WriteTable()
+        else:
+            self.WriteNormal()
+
+    def WriteNormal(self):
         document = Document()
         p = document.add_paragraph()
         Path = self.path
-        PicList = self.pics.sort() # Sort pics into an order
-
+        # Todo check if numbered and sort appropriately
+        PicList = sorted(self.pics) # Sort pics into an order
+        i=0
         for Pic in PicList:
             FullImageandPath = os.path.join(Path,Pic)
             r = p.add_run()
-            # Check if portrait or landscape and call add_picture with the appropriate arguements
-            # in order to set an appropriate pic size and preserve the aspect ratio
-            # TODO: getting errors when iterating this function!
             isPortrait = self.IsPortrait(FullImageandPath)
             if isPortrait:
                 r.add_picture(FullImageandPath,height=Inches(self.height))
             else:
                 r.add_picture(FullImageandPath,width=Inches(self.width))
-            # TODO "chop" pic name to remove extension
-            p.add_run("\n"+Pic+"\n")
-
+            p.add_run("\n"+Pic.split('.')[0]+"\n")
+            # update progress
+            cli_progress_test(cur_val=i,end_val=len(PicList))
+            i += 1
         document.save(self.title + '.docx')
 
+    def WriteTable(self):
+        document = Document()
+        Path = self.path
+        PicList = sorted(self.pics) # Sort pics into an order
+        numRows = self.GetNumberofRows()
+        table = document.add_table(rows=numRows, cols=self.tablecolumns)
+        i=0
+        Row_Index = 0 # Resets every iteration
+        # list[start:stop:step] pastes the picture in every 2nd cell
+        for row in table.rows[::2]:
+            Col_Index = 0 # Resets every iteration
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    try:
+                        Pic = PicList[i]
+                        FullImageandPath = os.path.join(Path,Pic)
+                        r = paragraph.add_run()
+                        isPortrait = self.IsPortrait(FullImageandPath)
+                        if isPortrait:
+                            r.add_picture(FullImageandPath,height=Inches(self.height))
+                        else:
+                            r.add_picture(FullImageandPath,width=Inches(self.width))
+                        # Offset 1 row down and add description
+                        table.cell(row_idx=Row_Index + 1,col_idx=Col_Index).text = Pic.split('.')[0]
+                        # Update user of progress
+                        cli_progress_test(cur_val=i,end_val=len(PicList))
+                    except IndexError:
+                        # we incur an index error at the end of the picture list
+                        # hence, we will simply pass and do nothing with the remaining empty cells
+                        pass
+                Col_Index += 1
+                i += 1
+            Row_Index += 2
+        document.save(self.title + '.docx')
+    
     def GetPicsInPath(self):
         self.pics = []
         ValidExtList = [".jpg",".jpeg",".png",".bmp",".gif",".JPG",".JPEG",".PNG",".BMP",".GIF"]
@@ -134,6 +159,36 @@ Example: python PhotoCopy.py -P \"C:\\\\Pictures\\\" -T \"Report\" -Td \"n\" -f 
             if width/height > 1:
                 return False
             else:
-                return True        
+                return True  
 
+    def isNumbered(self,list):
+        count = 0
+        for value in list:
+            string = value.split('.')[0]
+            if string[-1].isdigit() or string[0].isdigit:
+                count += 1
+        # if all names start or end with numbers, 
+        # then we can assume they have been numbered
+        if count == len(list):
+            sorting_tuple = [()]
+            for value in list:
+                string = value.split('.')[0]
+                string[len(string.rstrip('0123456789')):]
+            return True
+        else:
+            return False
 
+    def GetNumberofRows(self):
+        cols = self.tablecolumns
+        NumofPics = len(self.pics)
+        return int(math.ceil(NumofPics / cols)) * 2
+
+def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
+    
+    filled_len = int(round(bar_length * cur_val / float(end_val)))
+
+    percents = round(100.0 * cur_val / float(end_val), 1)
+    bar = '=' * filled_len + '-' * (bar_length - filled_len)
+
+    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
+    sys.stdout.flush()

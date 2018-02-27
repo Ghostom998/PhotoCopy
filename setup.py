@@ -4,27 +4,28 @@ import sys, os
 from distutils.core import setup
 from setuptools import setup
 
-__version__ = "0.6"
+__version__ = "0.7.2"
 
 def readme():
     with open('README.md') as f:
         return f.read()
 
 setup(
-    name = "photocopy",
+    name = "pics2word",
     description='A command line program to copy pictures into a word document.',
     version=__version__,
-    url='https://github.com/Ghostom998/PhotoCopy.git',
+    url='https://github.com/Ghostom998/pics2word.git',
     author='Thomas Roberts',
     author_email='tom_roberts.1992@hotmail.co.uk',
     license='GNU GPL V3.0',
-    packages=['PhotoCopy'],
+    packages=['pics2word'],
     install_requires=['docx','python-docx','datetime'],
+    python_requires='>3.5.2',
     include_package_data=True,
     zip_safe=True,
     long_description=readme(),
     entry_points = {
-        'console_scripts': ['photocopy=photocopy.__init__:main'],
+        'console_scripts': ['pics2word=pics2word.__init__:main'],
     },
     classifiers=[
     'Development Status :: 1 - Planning',
