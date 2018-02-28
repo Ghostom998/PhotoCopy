@@ -3,7 +3,7 @@ import os, sys, logging
 from docx import Document
 from docx.shared import Inches
 import datetime, imghdr, struct, math
-from LogGen import set_up_logging
+from .LogGen import set_up_logging
 
 logger = logging.getLogger(__name__)
 
@@ -71,12 +71,12 @@ class pics2word:
         PicList = sorted(self.pics) # Sort pics into an order
         i=0
         for Pic in PicList:
-            logger.debug("Writing picture: %s." % pic)
+            logger.debug("Writing picture: %s." % Pic)
             FullImageandPath = os.path.join(Path,Pic)
             r = p.add_run()
-            logger.debug("Checking if %s is portrait." % pic)
+            logger.debug("Checking if %s is portrait." % Pic)
             isPortrait = self.IsPortrait(FullImageandPath)
-            logger.debug("Adding %s to file." % pic)
+            logger.debug("Adding %s to file." % Pic)
             if isPortrait:
                 r.add_picture(FullImageandPath,height=Inches(self.height))
             else:
@@ -128,8 +128,11 @@ class pics2word:
                     except IndexError:
                         # we incur an index error at the end of the picture list
                         # hence, we will simply pass and do nothing with the remaining empty cells
-                        logging.error("Index Error on picture %s in row %s, cell %s." % (Pic, row, cell))
+                        logging.warning("Index Error on picture %s indicating that there are remaining cells but no new pictures." % Pic)
                         pass
+                    except docx.image.exceptions.UnrecognizedImageError:
+                        logging.error("Unsupported picture: %s" % Pic)
+                        print("Unsupported picture: %s" % Pic)
                 Col_Index += 1
                 i += 1
             Row_Index += 2

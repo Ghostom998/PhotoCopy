@@ -13,6 +13,5 @@ TODO tasks:
 ##Low Priority:
     Features:
     - Use Docopt module to make arg parsing simpler and to a more modern standard
-    - Implement a logger to aid with debugging
     Bug Fix:
     - More error checking, throw meaningful exceptions to aid with debugging

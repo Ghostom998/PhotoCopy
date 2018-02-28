@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import os, sys, logging
-from pics2word import *
-from LogGen import set_up_logging
+import os, sys, logging, pickle
+from .pics2word import *
+from .LogGen import set_up_logging
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +16,23 @@ Options:
 \t-pw\t- Set the width of imported pictures in inches. Defaults to 4 inches
 \t-ph\t- Set the height of imported pictures in inches. Defaults to 4 inches
 \t-tw\t- Set the number of columns used in table format. Note: table format must be enabled! Defaults to 2.
-\t-v\t - Verbosity, for debugging purposes. Set how much the program talks with "talk", "info" or "quiet". Defaults to "quiet".
+\t-v\t- Verbosity, for debugging purposes. Set how much the program talks with "talk", "info" or "quiet". Defaults to "quiet".
+\t-m\t- Module. Allows the creation of templates. Pass -m "report" to load the arguments saved in that module. 
+\t\t  If the module name does not exist then one will be created under the passed name using the proceeding arguments as saved values.
+\t\t  Note that when loading the template, arguments passed AFTER overwrite the template values but do not save permanently.
 
 Commands may be passed as command-value pairs in any order.
 All commands are optional and the defaults will be used if no commands are given.
 
 Example: pics2word -P \"C:\\\\Pictures\\\" -T Report -Td n -f table\n'''
     print(message)
+
+def remDictKey(d, key):
+    '''Returns a new dictionary with a key-value pair removed'''
+    logger.debug("removing %s from arg list dictionary" % key)
+    new_d = d.copy()
+    new_d.pop(key)
+    return new_d
 
 # Method to parse command line arguements into command-value pairs
 def getopts(argv):
@@ -37,8 +47,22 @@ def getopts(argv):
 def main():
     #Arglist passed as immutable for key to dict 
     set_up_logging(tuple(sys.argv))
-    myargs = getopts(sys.argv)
-    Doc = pics2word()
+    IniArgs = getopts(sys.argv)
+    # Load / save arg template
+    if '-m' in IniArgs: 
+        mod = IniArgs['-m']
+        try:
+            logger.info("Found module %s. Loading arg list." % mod)
+            myargs = pickle.load(open(mod+".p", "rb"))
+        except:
+            # Assumes the file does not exist so sets one up
+            logger.info("Module %s not found. creating module called %s" % (mod,mod))
+            myargs = remDictKey(IniArgs, '-m') # dont resave save function
+            pickle.dump(myargs, open(mod+".p", "wb"))
+    else:
+        myargs = IniArgs
+
+    Doc = pics2word()  
     if '-h' in myargs:
         help()
     if '-P' in myargs:
