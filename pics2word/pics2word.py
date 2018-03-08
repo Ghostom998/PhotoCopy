@@ -2,8 +2,9 @@
 import os, sys, logging
 from docx import Document
 from docx.shared import Inches
-import datetime, imghdr, struct, math
+import imghdr, struct, math
 from .LogGen import set_up_logging
+from .XtraFunctions import GetDate, NumberMe, cli_progress_test
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ class pics2word:
             p.add_run("\n"+Pic.split('.')[0]+"\n")
             # update progress
             logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
-            cli_progress_test(cur_val=i,end_val=len(PicList))
+            cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("writing loading bar picture %s of %s." % (i, len(PicList))))
             i += 1
         logger.info("Saving document as %s.docx" % self.title)
         document.save(self.title + '.docx')
@@ -95,7 +96,7 @@ class pics2word:
         document = Document()
         Path = self.path
         logger.debug("Sorting list of %s pictures." % len(self.pics))
-        PicList = sorted(self.pics) # Sort pics into an order
+        PicList = NumberMe(self.pics) # Sort pics into an order
         logger.info("Calculating number of rows.")
         numRows = self.GetNumberofRows()
         logger.info("Adding table of %s rows and %s columns." % (numRows, self.tablecolumns))
@@ -110,7 +111,7 @@ class pics2word:
                     try:
                         Pic = PicList[i]
                         logger.debug("Writing %s in row %s cell %s paragraph %s." % (Pic, row, cell, paragraph))
-                        FullImageandPath = os.path.join(Path,Pic)
+                        FullImageandPath = os.path.join(str(Path),str(Pic))
                         r = paragraph.add_run()
                         logging.debug("Checking if %s is portrait." % Pic)
                         isPortrait = self.IsPortrait(FullImageandPath)
@@ -124,15 +125,16 @@ class pics2word:
                         table.cell(row_idx=Row_Index + 1,col_idx=Col_Index).text = Pic.split('.')[0]
                         # Update user of progress
                         logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
-                        cli_progress_test(cur_val=i,end_val=len(PicList))
+                        cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("writing loading bar picture %s of %s." % (i, len(PicList))))
                     except IndexError:
                         # we incur an index error at the end of the picture list
                         # hence, we will simply pass and do nothing with the remaining empty cells
                         logging.warning("Index Error on picture %s indicating that there are remaining cells but no new pictures." % Pic)
                         pass
-                    except docx.image.exceptions.UnrecognizedImageError:
-                        logging.error("Unsupported picture: %s" % Pic)
-                        print("Unsupported picture: %s" % Pic)
+                    except:
+                        print("Error in copying picture to table: %s" % sys.exc_info()[0])
+                        raise
+                        logger.error("Error in copying picture to table: %s" % sys.exc_info()[0])
                 Col_Index += 1
                 i += 1
             Row_Index += 2
@@ -186,38 +188,7 @@ class pics2word:
             else:
                 return True  
 
-    def isNumbered(self,list):
-        count = 0
-        for value in list:
-            string = value.split('.')[0]
-            if string[-1].isdigit() or string[0].isdigit:
-                count += 1
-        # if all names start or end with numbers, 
-        # then we can assume they have been numbered
-        if count == len(list):
-            sorting_tuple = [()]
-            for value in list:
-                string = value.split('.')[0]
-                string[len(string.rstrip('0123456789')):]
-            return True
-        else:
-            return False
-
     def GetNumberofRows(self):
         cols = self.tablecolumns
         NumofPics = len(self.pics)
         return int(math.ceil(NumofPics / cols)) * 2
-
-def GetDate():
-        logger.debug("Setting the date.")
-        return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
-
-def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
-    
-    filled_len = int(round(bar_length * cur_val / float(end_val)))
-
-    percents = round(100.0 * cur_val / float(end_val), 1)
-    bar = '=' * filled_len + '-' * (bar_length - filled_len)
-
-    sys.stdout.write('[%s] %s%s ...%s\r\n' % (bar, percents, '%', suffix))
-    sys.stdout.flush()
