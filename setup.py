@@ -4,7 +4,7 @@ import sys, os
 from distutils.core import setup
 from setuptools import setup
 
-__version__ = "0.9"
+__version__ = "0.9.2"
 
 def readme():
     with open('README.md') as f:
