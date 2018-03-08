@@ -4,11 +4,10 @@ from docx import Document
 from docx.shared import Inches
 import datetime, imghdr, struct, math
 from .LogGen import set_up_logging
-from .XtraFunctions import GetDate, NumberMe, cli_progress_test
 
 logger = logging.getLogger(__name__)
 
-class pics2word:
+cdef class pics2word:
 
     def __init__(self):
         # set default values on instantiation, until changed with CL args
@@ -21,37 +20,37 @@ class pics2word:
         self.SetFormat()
         self.SetTableWidth()
 
-    def SetPath(self, Path=os.getcwd()):
+    cpdef def SetPath(self, Path=os.getcwd()):
         # Default path is the current working directory on the command line
         logger.info("Getting pictures from %s." % Path)
-        self.path = os.path.abspath(Path)
+        str self.path = os.path.abspath(Path)
 
-    def SetTitle(self, title="PhotoDoc", date='y'):
+    cpdef def SetTitle(self, str title="PhotoDoc", char date='y'):
         # if date begions with 'y', append title with date
         if date[0] == 'y':
-            Today = GetDate()
-            self.title = title + "_" + str(Today)
+            str Today = GetDate()
+            str self.title = title + "_" + Today
         else:
-            self.title = title
+            str self.title = title
 
-    def SetPicWidth(self,Width=4):
+    cpdef def SetPicWidth(self, float Width=4):
         # TODO set a default!
-        self.width = Width
+        float self.width = Width
 
-    def SetPicHeight(self,Height=4):
+    cpdef def SetPicHeight(self, float Height=4):
         # TODO set a default!
-        self.height = Height
+        float self.height = Height
 
-    def SetTableWidth(self, Columns=2):
+    cpdef def SetTableWidth(self, int Columns=2):
         # TODO set a default!
-        self.tablecolumns = Columns
+        int self.tablecolumns = Columns
     
-    def SetFormat(self, format="normal"):
+    cpdef def SetFormat(self, format="normal"):
         logger.debug("Setting format to %s." % format)
         if format[0].lower() == 't':
-            self.format = "table"
+            str self.format = "table"
         elif format[0].lower() == 'n':
-            self.format = "normal"
+            str self.format = "normal"
         else:
             raise ValueError("Please enter a valid format for '-f' i.e. \"Normal\" or \"Table\"")
 
@@ -70,7 +69,7 @@ class pics2word:
         Path = self.path
         # Todo check if numbered and sort appropriately
         logger.debug("Sorting list of %s pictures." % len(self.pics))
-        PicList = NumberMe(self.pics) # Sort pics into an order
+        PicList = sorted(self.pics) # Sort pics into an order
         i=0
         for Pic in PicList:
             logger.debug("Writing picture: %s." % Pic)
@@ -97,7 +96,7 @@ class pics2word:
         document = Document()
         Path = self.path
         logger.debug("Sorting list of %s pictures." % len(self.pics))
-        PicList = NumberMe(self.pics) # Sort pics into an order
+        PicList = sorted(self.pics) # Sort pics into an order
         logger.info("Calculating number of rows.")
         numRows = self.GetNumberofRows()
         logger.info("Adding table of %s rows and %s columns." % (numRows, self.tablecolumns))
@@ -186,14 +185,8 @@ class pics2word:
             if width/height > 1:
                 return False
             else:
-                return True 
-    
-    def GetNumberofRows(self): 
-        cols = self.tablecolumns 
-        NumofPics = len(self.pics) 
-        return int(math.ceil(NumofPics / cols)) * 2  
-        
-'''
+                return True  
+
     def isNumbered(self,list):
         count = 0
         for value in list:
@@ -212,13 +205,13 @@ class pics2word:
             return False
 
     def GetNumberofRows(self):
-    cols = self.tablecolumns
-    NumofPics = len(self.pics)
-    return int(math.ceil(NumofPics / cols)) * 2
+        cols = self.tablecolumns
+        NumofPics = len(self.pics)
+        return int(math.ceil(NumofPics / cols)) * 2
 
 def GetDate():
-    logger.debug("Setting the date.")
-    return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
+        logger.debug("Setting the date.")
+        return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
 
 def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
     
@@ -229,4 +222,3 @@ def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
 
     sys.stdout.write('[%s] %s%s ...%s\r\n' % (bar, percents, '%', suffix))
     sys.stdout.flush()
-    '''
