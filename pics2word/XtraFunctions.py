@@ -22,9 +22,9 @@ def NumberMe(List):
             ext = item.split('.')[1]
             Num = String[len(String.rstrip('0123456789')):]
             # Add to list
-            SubList[0] = String
-            SubList[1] = Num
-            SubList[2] = ext
+            SubList[0] = str(String)
+            SubList[1] = int(Num)
+            SubList[2] = str(ext)
             # Add SubList to Main List
             WordNum.append(SubList)
 
@@ -33,14 +33,16 @@ def NumberMe(List):
 
         # Print sorted list:
         # Error is here somewhere!
+        NumberedList = []
         for word in WordNum:
             # Delete the number index so we have a clean list
             del word[1]
-            [str('.'.join(word)) if x==word else x for x in WordNum]
-            print('.'.join(word))
-            print(word)
+            NumberedList.append('.'.join(word)) #word = '.'.join(word) 
+        
+        for item in NumberedList:
+            print(item)
 
-        return WordNum
+        return NumberedList
 
 def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
     
