@@ -87,7 +87,7 @@ class pics2word:
             p.add_run("\n"+Pic.split('.')[0]+"\n")
             # update progress
             logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
-            cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("writing loading bar picture %s of %s." % (i, len(PicList))))
+            cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("Writing pic %s of %s." % (i, len(PicList))))
             i += 1
         logger.info("Saving document as %s.docx" % self.title)
         document.save(self.title + '.docx')
@@ -114,7 +114,7 @@ class pics2word:
                         logger.debug("Writing %s in row %s cell %s paragraph %s." % (Pic, row, cell, paragraph))
                         FullImageandPath = os.path.join(str(Path),str(Pic))
                         r = paragraph.add_run()
-                        logging.debug("Checking if %s is portrait." % Pic)
+                        logger.debug("Checking if %s is portrait." % Pic)
                         isPortrait = self.IsPortrait(FullImageandPath)
                         logger.debug("Adding %s to file." % Pic)
                         if isPortrait:
@@ -126,16 +126,16 @@ class pics2word:
                         table.cell(row_idx=Row_Index + 1,col_idx=Col_Index).text = Pic.split('.')[0]
                         # Update user of progress
                         logger.debug("writing loading bar picture %s of %s." % (i, len(PicList)))
-                        cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("writing loading bar picture %s of %s." % (i, len(PicList))))
+                        cli_progress_test(cur_val=i,end_val=len(PicList),suffix=("Writing pic %s of %s." % (i, len(PicList))))
                     except IndexError:
                         # we incur an index error at the end of the picture list
                         # hence, we will simply pass and do nothing with the remaining empty cells
-                        logging.warning("Index Error on picture %s indicating that there are remaining cells but no new pictures." % Pic)
+                        logger.warning("Index Error on picture %s indicating that there are remaining cells but no new pictures." % Pic)
                         pass
                     except:
                         print("Error in copying picture to table: %s" % sys.exc_info()[0])
-                        raise
                         logger.error("Error in copying picture to table: %s" % sys.exc_info()[0])
+                        raise
                 Col_Index += 1
                 i += 1
             Row_Index += 2
@@ -148,7 +148,7 @@ class pics2word:
         for file in os.listdir(self.path):
             for ValidExt in ValidExtList:
                 if file.endswith(ValidExt):
-                    logging.debug("Adding %s to PicList" % file)
+                    logger.debug("Adding %s to PicList" % file)
                     self.pics.append(file)
         return self.pics
 
@@ -190,6 +190,6 @@ class pics2word:
                 return True  
 
     def GetNumberofRows(self):
-    cols = self.tablecolumns
-    NumofPics = len(self.pics)
-    return int(math.ceil(NumofPics / cols)) * 2
+        cols = self.tablecolumns
+        NumofPics = len(self.pics)
+        return int(math.ceil(NumofPics / cols)) * 2

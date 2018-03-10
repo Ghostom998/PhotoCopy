@@ -4,7 +4,7 @@ import sys, os
 from distutils.core import setup
 from setuptools import setup
 
-__version__ = "0.9.2"
+__version__ = "0.9.5"
 
 def readme():
     with open('README.md') as f:
@@ -20,7 +20,7 @@ setup(
     license='GNU GPL V3.0',
     packages=['pics2word'],
     install_requires=['docx','python-docx','datetime'],
-    python_requires='>3.5.2',
+    python_requires='>3.6.4',
     include_package_data=True,
     zip_safe=True,
     long_description=readme(),

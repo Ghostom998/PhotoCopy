@@ -63,4 +63,6 @@ Useful supplementary third party software:
 
 - Use Docopt module to make arg parsing simpler and to a more modern standard??
 
+- Allow the user to omit the picture name??
+
 #### Bug fix's
