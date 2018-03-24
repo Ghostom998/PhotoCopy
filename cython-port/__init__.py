@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+'''
+CLI Front End
+'''
 import os, sys, logging, pickle
-from .pics2word import *
+from pics2word import *
 from .LogGen import set_up_logging
 from .help import help
 

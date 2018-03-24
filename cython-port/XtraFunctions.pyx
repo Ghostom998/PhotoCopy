@@ -4,22 +4,23 @@ from .LogGen import set_up_logging
 
 logger = logging.getLogger(__name__)
 
-def GetDate():
+cpdef str GetDate():
     logger.debug("Setting the date.")
     return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
 
 # split words from file extension and number, sort by index (numerically or alphabetically), 
 # then rejoin words in list
-def OrderMe(List):
+cpdef def OrderMe(List):
     NumList = []
     WordList = []
     for item in List:
-        String = item.split('.')[0]# get value to the left of ".jpg" (or whichever)
-        ext = item.split('.')[1]
-        Num = String[len(String.rstrip('0123456789')):]
+        str String = item.split('.')[0]# get value to the left of ".jpg" (or whichever)
+        str ext = item.split('.')[1]
+        float Num = String[len(String.rstrip('0123456789')):]
         
-        if Num.isdigit():
-            NumList.append(SplitList(String, Num, ext)) # create numbered list
+        if Num != NULL:
+            if Num.isdigit():
+                NumList.append(SplitList(String, Num, ext)) # create numbered list
         else:
             WordList.append(SplitList(String,Num, ext)) # create ordered strings
 
@@ -34,7 +35,7 @@ def OrderMe(List):
     # final list placing numbers first
     return NumberedList + AlphaList
 
-def SplitList(String, Num, Ext):
+cpdef def SplitList(str String, float Num, str Ext):
     SubList = []
     SubList.append(String)
     if Num.isdigit():
@@ -46,7 +47,7 @@ def SplitList(String, Num, Ext):
     # Add SubList to Main List
     return SubList
 
-def joinList(List):
+cpdef def joinList(List):
     JoinedList = []
     for item in List:
         # Delete the number index so we have a clean list
@@ -55,11 +56,11 @@ def joinList(List):
         JoinedList.append('.'.join(item)) #word = '.'.join(word) 
     return JoinedList
 
-def cli_progress_test(cur_val, end_val, bar_length=40, suffix=''):
+cpdef def cli_progress_test(float cur_val, float end_val, int bar_length=40, str suffix=''):
     
-    filled_len = int(round(bar_length * cur_val / float(end_val)))
+    int filled_len = int(round(bar_length * cur_val / float(end_val)))
 
-    percents = round(100.0 * cur_val / float(end_val), 1)
-    bar = '=' * filled_len + '-' * (bar_length - filled_len)
+    float percents = round(100.0 * cur_val / float(end_val), 1)
+    str bar = '=' * filled_len + '-' * (bar_length - filled_len)
 
-    print('[%s] %s%s ...%s\r\n' % (bar, percents, '%', suffix), flush=True)
+    print('[%s] %s%s ...%s\r\n' % (bar, percents, '%', suffix), bool flush=True)

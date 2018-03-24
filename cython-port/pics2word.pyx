@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os, sys, logging
 from docx import Document
 from docx.shared import Inches
@@ -8,45 +7,45 @@ from .XtraFunctions import GetDate, OrderMe, cli_progress_test
 
 logger = logging.getLogger(__name__)
 
-class pics2word:
+cpdef class pics2word:
 
-    def __init__(self):
+    cpdef def __init__(self):
         # set default values on instantiation, until changed with CL args
         logger.debug("Running constructor functions")
         self.SetPath()
         self.SetTitle() 
-        self.SetPicWidth()
-        self.SetPicHeight()
+        float self.SetPicWidth()
+        float self.SetPicHeight()
         self.GetPicsInPath()
         self.SetFormat()
-        self.SetTableWidth()
+        int self.SetTableWidth()
 
-    def SetPath(self, Path=os.getcwd()):
+    cpdef def SetPath(self, Path=os.getcwd()):
         # Default path is the current working directory on the command line
         logger.info("Getting pictures from %s." % Path)
         self.path = os.path.abspath(Path)
 
-    def SetTitle(self, title="PhotoDoc", date='y'):
+    cpdef SetTitle(self, str title="PhotoDoc", str date='y'):
         # if date begions with 'y', append title with date
         if date[0] == 'y':
-            Today = GetDate()
+            str Today = GetDate()
             self.title = title + "_" + str(Today)
         else:
             self.title = title
 
-    def SetPicWidth(self,Width=4):
+    cpdef def SetPicWidth(self, int Width=4):
         # TODO set a default!
         self.width = Width
 
-    def SetPicHeight(self,Height=4):
+    cpdef def SetPicHeight(self,int Height=4):
         # TODO set a default!
         self.height = Height
 
-    def SetTableWidth(self, Columns=2):
+    cpdef def SetTableWidth(self, int Columns=2):
         # TODO set a default!
         self.tablecolumns = Columns
     
-    def SetFormat(self, format="normal"):
+    cpdef def SetFormat(self, str format="normal"):
         logger.debug("Setting format to %s." % format)
         if format[0].lower() == 't':
             self.format = "table"
@@ -55,7 +54,7 @@ class pics2word:
         else:
             raise ValueError("Please enter a valid format for '-f' i.e. \"Normal\" or \"Table\"")
 
-    def WriteDoc(self):
+    cpdef def WriteDoc(self):
         if self.format[0].lower() == 't':
             logger.info("Writing to table.")
             self.WriteTable()
@@ -63,21 +62,21 @@ class pics2word:
             logger.info("Writing to document normally.")
             self.WriteNormal()
 
-    def WriteNormal(self):
+    cpdef def WriteNormal(self):
         logger.info("Creating word document.")
         document = Document()
         p = document.add_paragraph()
-        Path = self.path
+        str Path = self.path
         # Todo check if numbered and sort appropriately
         logger.debug("Sorting list of %s pictures." % len(self.pics))
         PicList = OrderMe(self.pics) # Sort pics into an order
-        i=0
+        int i = 0
         for Pic in PicList:
             logger.debug("Writing picture: %s." % Pic)
             FullImageandPath = os.path.join(Path,Pic)
             r = p.add_run()
             logger.debug("Checking if %s is portrait." % Pic)
-            isPortrait = self.IsPortrait(FullImageandPath)
+            bool isPortrait = self.IsPortrait(FullImageandPath)
             logger.debug("Adding %s to file." % Pic)
             if isPortrait:
                 r.add_picture(FullImageandPath,height=Inches(self.height))
@@ -92,18 +91,18 @@ class pics2word:
         logger.info("Saving document as %s.docx" % self.title)
         document.save(self.title + '.docx')
 
-    def WriteTable(self):
+    cpdef def WriteTable(self):
         logger.info("Creating word document.")
         document = Document()
         Path = self.path
         logger.debug("Sorting list of %s pictures." % len(self.pics))
         PicList = OrderMe(self.pics) # Sort pics into an order
         logger.info("Calculating number of rows.")
-        numRows = self.GetNumberofRows()
+        int numRows = self.GetNumberofRows()
         logger.info("Adding table of %s rows and %s columns." % (numRows, self.tablecolumns))
         table = document.add_table(rows=numRows, cols=self.tablecolumns)
-        i=0
-        Row_Index = 0 # Resets every iteration
+        int i=0
+        int Row_Index = 0 # Resets every iteration
         # list[start:stop:step] pastes the picture in every 2nd cell
         for row in table.rows[::2]:
             Col_Index = 0 # Resets every iteration
@@ -115,7 +114,7 @@ class pics2word:
                         FullImageandPath = os.path.join(str(Path),str(Pic))
                         r = paragraph.add_run()
                         logger.debug("Checking if %s is portrait." % Pic)
-                        isPortrait = self.IsPortrait(FullImageandPath)
+                        bool isPortrait = self.IsPortrait(FullImageandPath)
                         logger.debug("Adding %s to file." % Pic)
                         if isPortrait:
                             r.add_picture(FullImageandPath,height=Inches(self.height))
@@ -142,7 +141,7 @@ class pics2word:
         logger.info("Saving document as %s.docx" % self.title)
         document.save(self.title + '.docx')
     
-    def GetPicsInPath(self):
+    cpdef def GetPicsInPath(self):
         self.pics = []
         ValidExtList = [".jpg",".jpeg",".png",".bmp",".gif",".JPG",".JPEG",".PNG",".BMP",".GIF"]
         for file in os.listdir(self.path):
@@ -152,7 +151,7 @@ class pics2word:
                     self.pics.append(file)
         return self.pics
 
-    def IsPortrait(self, fname):
+    cpdef bool IsPortrait(self, fname):
         """Determine the image type of fhandle and return its size."""
         with open(fname, 'rb') as fhandle:
             head = fhandle.read(24)
@@ -189,7 +188,7 @@ class pics2word:
             else:
                 return True  
 
-    def GetNumberofRows(self):
+    cpdef int GetNumberofRows(self):
         cols = self.tablecolumns
-        NumofPics = len(self.pics)
+        int NumofPics = len(self.pics)
         return int(math.ceil(NumofPics / cols)) * 2

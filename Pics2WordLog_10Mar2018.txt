@@ -1,0 +1,30 @@
+10/03/2018 09:25:23 PM DEBUG: Adding 4 as a value to -tw command.
+10/03/2018 09:25:23 PM DEBUG: Running constructor functions
+10/03/2018 09:25:23 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:25:23 PM DEBUG: Setting the date.
+10/03/2018 09:25:23 PM DEBUG: Setting format to normal.
+10/03/2018 09:28:42 PM DEBUG: Adding tw as a value to -h command.
+10/03/2018 09:28:42 PM DEBUG: Running constructor functions
+10/03/2018 09:28:42 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:28:42 PM DEBUG: Setting the date.
+10/03/2018 09:28:42 PM DEBUG: Setting format to normal.
+10/03/2018 09:31:32 PM DEBUG: Adding m as a value to -h command.
+10/03/2018 09:31:32 PM DEBUG: Running constructor functions
+10/03/2018 09:31:32 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:31:32 PM DEBUG: Setting the date.
+10/03/2018 09:31:32 PM DEBUG: Setting format to normal.
+10/03/2018 09:32:05 PM DEBUG: Adding tw as a value to -h command.
+10/03/2018 09:32:05 PM DEBUG: Running constructor functions
+10/03/2018 09:32:05 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:32:05 PM DEBUG: Setting the date.
+10/03/2018 09:32:05 PM DEBUG: Setting format to normal.
+10/03/2018 09:34:10 PM DEBUG: Adding m as a value to -h command.
+10/03/2018 09:34:10 PM DEBUG: Running constructor functions
+10/03/2018 09:34:10 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:34:10 PM DEBUG: Setting the date.
+10/03/2018 09:34:10 PM DEBUG: Setting format to normal.
+10/03/2018 09:38:21 PM DEBUG: Adding i as a value to -h command.
+10/03/2018 09:38:21 PM DEBUG: Running constructor functions
+10/03/2018 09:38:21 PM INFO: Getting pictures from /home/tom/Documents/pics2word.
+10/03/2018 09:38:21 PM DEBUG: Setting the date.
+10/03/2018 09:38:21 PM DEBUG: Setting format to normal.

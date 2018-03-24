@@ -204,18 +204,18 @@ cdef class pics2word:
         else:
             return False
 
-    def GetNumberofRows(self):
-        cols = self.tablecolumns
-        NumofPics = len(self.pics)
+    cpdef def GetNumberofRows(self):
+        int cols = self.tablecolumns
+        int NumofPics = len(self.pics)
         return int(math.ceil(NumofPics / cols)) * 2
 
 def GetDate():
         logger.debug("Setting the date.")
         return datetime.date.today().strftime("%d%b%Y") # i.e. 15Feb2018
 
-def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
+cpdef def cli_progress_test(cur_val, end_val, bar_length=60, suffix=''):
     
-    filled_len = int(round(bar_length * cur_val / float(end_val)))
+    int filled_len = int(round(bar_length * cur_val / float(end_val)))
 
     percents = round(100.0 * cur_val / float(end_val), 1)
     bar = '=' * filled_len + '-' * (bar_length - filled_len)

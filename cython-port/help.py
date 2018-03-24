@@ -1,4 +1,4 @@
-def help(arg):
+def help( arg):
     Message = {}
     Message['help'] = '''Usage: pics2word [-command] [value]
 Options:
