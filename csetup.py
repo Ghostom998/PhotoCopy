@@ -40,7 +40,7 @@ setup(
     license='GNU GPL V3.0',
     packages=['pics2word'],
     install_requires=['docx','python-docx','datetime'],
-    python_requires='>3.6.4',
+    python_requires='>=3.6.4',
     include_package_data=True,
     zip_safe=True,
     long_description=readme(),

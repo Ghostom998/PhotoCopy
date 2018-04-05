@@ -1,4 +1,7 @@
-def help(arg):
+import json, os
+
+def writehelp(helppath=os.getcwd()):
+    ''' Used to write the help json to avoid saving and loading data in code which can be slow. '''
     Message = {}
     Message['help'] = '''Usage: pics2word [-command] [value]
 Options:
@@ -80,9 +83,11 @@ Raise a new issue then:
 - Note the operating system, version of python used and pics2word version
 - Include any further relavent information you deem useful.'''
 
-    try:
-        print(Message[arg.lower()])
-    except:
-        print("Please enter a valid option.")
-        print("Remember to pass the right command without the hyphen.")
-        print("Pass \"pics2word -h help\" for more info.")
+    with open(helppath,'w') as fp:
+        try:
+            json.dump(Message, fp, sort_keys=True, indent=4)
+        except:
+            raise
+
+if __name__ == '__main__':
+    writehelp()

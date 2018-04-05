@@ -1,0 +1,10 @@
+05/04/2018 05:30:14 PM DEBUG: Adding help as a value to -h command.
+05/04/2018 05:30:14 PM DEBUG: Running constructor functions
+05/04/2018 05:30:14 PM INFO: Getting pictures from C:\Users\Thomas\Documents\Toms Scripts and Software\GitHub\pics2word.
+05/04/2018 05:30:14 PM DEBUG: Setting the date.
+05/04/2018 05:30:14 PM DEBUG: Setting format to normal.
+05/04/2018 05:30:34 PM DEBUG: Adding m as a value to -h command.
+05/04/2018 05:30:34 PM DEBUG: Running constructor functions
+05/04/2018 05:30:34 PM INFO: Getting pictures from C:\Users\Thomas\Documents\Toms Scripts and Software\GitHub\pics2word.
+05/04/2018 05:30:34 PM DEBUG: Setting the date.
+05/04/2018 05:30:34 PM DEBUG: Setting format to normal.

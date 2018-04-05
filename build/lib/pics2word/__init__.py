@@ -1,41 +1,31 @@
 #!/usr/bin/env python3
-import os, sys, logging, errno, json
+import os, sys, logging, pickle
 from .pics2word import *
 from .LogGen import set_up_logging
-from .WriteHelp import writehelp
 
 logger = logging.getLogger(__name__)
 
-def ExecuteHelp():
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),"help.json")
-    if not os.path.exists(path):
-        try:
-            print("Creating help file...")
-            writehelp(path)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-    return path
+def help():
+    message = '''Usage: pics2word [-command] [value]
+Options:
+\t-h\t- Pass "help" to print this help message to the terminal. \n\t\t  Pass the name of a command below without the '-' for more informatio about that command. <UNDER CONSTRUCTION>
+\t-P\t- Pass an alternative path to be used. i.e. \"C:\\\\Pictures\\\". Defaults to current directory.
+\t-f\t- format pictures. pass either "normal" or "table". Defaults to normal. 
+\t-T\t- Override the default title. Defaults to PhotoDoc_<current date> (See Td, below).
+\t-Td\t- Choose to append the title with the current date. Options: \"y\" or \"n\". Defaults to \"y\".
+\t-pw\t- Set the width of imported pictures in inches. Defaults to 4 inches
+\t-ph\t- Set the height of imported pictures in inches. Defaults to 4 inches
+\t-tw\t- Set the number of columns used in table format. Note: table format must be enabled! Defaults to 2.
+\t-v\t- Verbosity, for debugging purposes. Set how much the program talks with "talk", "info" or "quiet". Defaults to "quiet".
+\t-m\t- Module. Allows the creation of templates. Pass -m "report" to load the arguments saved in that module. 
+\t\t  If the module name does not exist then one will be created under the passed name using the proceeding arguments as saved values.
+\t\t  Note that when loading the template, arguments passed AFTER overwrite the template values but do not save permanently.
 
-def help(arg):
-    helppath = ExecuteHelp()
-    with open(helppath, 'r') as fp:
-        help = json.load(fp)
-        return help[arg]
+Commands may be passed as command-value pairs in any order.
+All commands are optional and the defaults will be used if no commands are given.
 
-def SavePath(Name):
-    # Save the module in the main directory
-    path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(path, "modules", Name + ".json")
-
-def Check4Directory(file):
-    path = os.path.dirname(file)
-    if not os.path.exists(path):
-        try:
-            os.makedirs(path)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
+Example: pics2word -P \"C:\\\\Pictures\\\" -T Report -Td n -f table\n'''
+    print(message)
 
 def remDictKey(d, key):
     '''Returns a new dictionary with a key-value pair removed'''
@@ -54,35 +44,27 @@ def getopts(argv):
         argv = argv[1:]  # Reduce the argument list by copying it starting from index 1.
     return opts
 
-def LoadSave(IniArgs):
-    if '-m' in IniArgs: 
-        mod = SavePath(IniArgs['-m'])
-        try:
-            # Try to look for the file in the directory
-            logger.info("Found module %s. Loading arg list." % mod)
-            with open(mod,'r') as fp:
-                return json.load(fp)
-        except FileNotFoundError:
-            # If theres an error loading the file we assume the file does not exist and so one is set up
-            logger.info("Module %s not found. creating module called %s" % (mod,mod))
-            myargs = remDictKey(IniArgs, '-m') # dont resave save function
-            # If the directory does not exist, create directory
-            Check4Directory(mod)
-            with open(mod,'r') as fp:
-                json.dump(myargs, fp)
-            return myargs
-    else:
-        return IniArgs
-
 def main():
     #Arglist passed as immutable for key to dict 
     set_up_logging(tuple(sys.argv))
-    # Parse the arguments then either Load or save an arg template
-    myargs = LoadSave(getopts(sys.argv))
+    IniArgs = getopts(sys.argv)
+    # Load / save arg template
+    if '-m' in IniArgs: 
+        mod = IniArgs['-m']
+        try:
+            logger.info("Found module %s. Loading arg list." % mod)
+            myargs = pickle.load(open(mod+".p", "rb"))
+        except:
+            # Assumes the file does not exist so sets one up
+            logger.info("Module %s not found. creating module called %s" % (mod,mod))
+            myargs = remDictKey(IniArgs, '-m') # dont resave save function
+            pickle.dump(myargs, open(mod+".p", "wb"))
+    else:
+        myargs = IniArgs
 
     Doc = pics2word()  
     if '-h' in myargs:
-        print(help(myargs['-h']))
+        help()
     if '-P' in myargs:
         # Override the default path
         Doc.SetPath(myargs['-P'])
@@ -107,7 +89,6 @@ def main():
     # after all optional parameters have been changed and not asked for help, then write document.
     if '-h' not in myargs:
         Doc.WriteDoc()
-        print("\n........Done!\n")
 
 if __name__ == '__main__':
     main()

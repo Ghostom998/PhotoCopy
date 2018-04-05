@@ -47,12 +47,12 @@ def SplitList(String, Num, Ext):
     return SubList
 
 def joinList(List):
-    JoinedList = []
+    JoinedList = [] # that is to say, a list of joined lists
     for item in List:
         # Delete the number index so we have a clean list
         if len(item) == 3:
             del item[1]
-        JoinedList.append('.'.join(item)) #word = '.'.join(word) 
+        JoinedList.append('.'.join(item)) # word = '.'.join(word) 
     return JoinedList
 
 def cli_progress_test(cur_val, end_val, bar_length=40, suffix=''):
